@@ -24,6 +24,8 @@ class Benchmark(module.Module):
         f = open(fname, "w")
         f.write("operation processid messagenumber time\n")
         while time.time() < t0 + self.duration:
+            print(messagenumber)
+            excepted = False
             try:
                 message = (self.testid, messagenumber, os.urandom(256))
                 self.southbound.broadcast(message)
@@ -41,6 +43,7 @@ class Benchmark(module.Module):
                 f.write(logmessage)
             except Exception as e:
                 f.write(str(e))
+                excepted = True
             try:
                 for _ in range(12):
                     message = self.southbound.deliver()
@@ -57,6 +60,8 @@ class Benchmark(module.Module):
                     f.write(logmessage)
             except Exception as e:
                 f.write(str(e) + "\n")
+                if excepted == True:
+                    time.sleep(1.0)
         f.close()
         client = storage.Client()
         bucket = client.get_bucket("tpbexperiment")

@@ -42,18 +42,19 @@ class Benchmark(module.Module):
             except Exception as e:
                 f.write(str(e))
             try:
-                message = self.southbound.deliver()
-                logmessage = (
-                    "deliver"
-                    + " "
-                    + str(message[0])
-                    + " "
-                    + str(message[1])
-                    + " "
-                    + str(time.time())
-                    + "\n"
-                )
-                f.write(logmessage)
+                for _ in range(12):
+                    message = self.southbound.deliver()
+                    logmessage = (
+                        "deliver"
+                        + " "
+                        + str(message[0])
+                        + " "
+                        + str(message[1])
+                        + " "
+                        + str(time.time())
+                        + "\n"
+                    )
+                    f.write(logmessage)
             except Exception as e:
                 f.write(str(e) + "\n")
         f.close()

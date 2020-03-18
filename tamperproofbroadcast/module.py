@@ -1,9 +1,11 @@
 import logging.config
 import subprocess
 import threading
+import binascii
 import argparse
 import logging
 import inspect
+import pickle
 import atexit
 import signal
 import os
@@ -49,7 +51,7 @@ class Module:
         signal.signal(signal.SIGTERM, _decorator(Module.funcs))
         signal.signal(signal.SIGINT, _decorator(Module.funcs))
 
-    def _execute_command(self, command, daemon=False):
+    def _execute_command(self, command, daemon=False, streaming=False):
         try:
             logger.debug("executing command: %s" % command)
             if daemon == True:
@@ -68,13 +70,23 @@ class Module:
                 threading.Thread(target=f, daemon=True).start()
                 return None
             else:
-                result = subprocess.run(
-                    command, shell=True, capture_output=True, check=True
-                )
-                return result.stdout
+                if streaming == True:
+                    result = subprocess.run(command, shell=True)
+                    return result.stdout
+                else:
+                    result = subprocess.run(
+                        command, shell=True, capture_output=True, check=True
+                    )
+                    return result.stdout
         except Exception as e:
             logger.error("error: %s" % e)
             raise e
+
+    def _pack(self, message):
+        return binascii.hexlify(pickle.dumps(message)).decode()
+
+    def _unpack(self, payload):
+        return pickle.loads(binascii.unhexlify(payload))
 
     @classmethod
     def _Parser(cls):

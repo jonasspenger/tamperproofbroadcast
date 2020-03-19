@@ -42,7 +42,7 @@ class Benchmark(module.Module):
             except Exception as e:
                 f.write(str(e))
             try:
-                for _ in range(12):
+                for _ in range(128):
                     message = self.southbound.deliver()
                     logmessage = (
                         "deliver"

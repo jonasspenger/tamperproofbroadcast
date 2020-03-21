@@ -16,9 +16,16 @@ logger = logging.getLogger("etcdbroadcast")
 
 
 class ETCDBroadcast(module.Module):
-    def __init__(self, host="localhost", port="2379", queuesize=128):
-        self.etcdclient = etcd3.client(host=host, port=port, grpc_options={'grpc.max_send_message_length': -1, 'grpc.max_receive_message_length': -1}.items())
-        self.queue = queue.Queue(maxsize=queuesize)
+    def __init__(self, etcdhost="localhost", etcdport="2379", etcdqueuesize=128):
+        self.etcdclient = etcd3.client(
+            host=etcdhost,
+            port=etcdport,
+            grpc_options={
+                "grpc.max_send_message_length": -1,
+                "grpc.max_receive_message_length": -1,
+            }.items(),
+        )
+        self.queue = queue.Queue(maxsize=etcdqueuesize)
         self.cancel = None
 
     def broadcast(self, message):

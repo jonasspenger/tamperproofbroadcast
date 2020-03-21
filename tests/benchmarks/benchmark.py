@@ -1,15 +1,14 @@
+import sys
+
+sys.path.append("tamperproofbroadcast")
+
 from google.cloud import storage
-import logging.config
-import logging
 import time
 import os
 import tamperproofbroadcast
 import etcdbroadcast
 import batchingbroadcast
 import module
-
-logging.config.fileConfig(os.path.join(os.path.dirname(__file__), "logging.conf"))
-logger = logging.getLogger("benchmark")
 
 
 class Benchmark(module.Module):

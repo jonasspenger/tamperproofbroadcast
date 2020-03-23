@@ -22,6 +22,9 @@ class Module:
     def _create(self):
         pass
 
+    def _uncreate(self):
+        pass
+
     def _start(self):
         pass
 

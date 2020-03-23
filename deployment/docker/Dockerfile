@@ -30,7 +30,8 @@ RUN  pip3 install --upgrade pip \
   && pip3 install --trusted-host pypi.python.org etcd3==0.11.1 \
   && pip3 install --trusted-host pypi.python.org Flask==1.1.1 \
   && pip install --trusted-host pypi.python.org requests==2.23.0 \
-  && pip install --trusted-host pypi.python.org google-cloud-storage==1.26.0
+  && pip install --trusted-host pypi.python.org google-cloud-storage==1.26.0 \
+  && pip install --trusted-host pypi.python.org plyvel==1.2.0
 
 # final image
 FROM alpine:3.11

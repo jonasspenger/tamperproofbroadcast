@@ -1,6 +1,7 @@
 import sys
+import os
 
-sys.path.append("tamperproofbroadcast")
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../tamperproofbroadcast"))
 
 import unittest.mock
 import unittest

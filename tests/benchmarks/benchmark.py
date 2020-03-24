@@ -1,11 +1,11 @@
 import sys
+import os
 
-sys.path.append("tamperproofbroadcast")
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../tamperproofbroadcast"))
 
 from google.cloud import storage
 import logging
 import time
-import os
 import tamperproofbroadcast
 import module
 

@@ -48,7 +48,9 @@ class TestHTLLBroadcast(unittest.TestCase):
             bc._register_southbound(b)
             bc._register_northbound(northbound)
             self.fifobroadcasts.append(bc)
-            hb = htllbroadcast.HTLLBroadcast(keypair[0], keypair[1], keypair[2], 2**10, e.host, e.port, 128, 128)
+            hb = htllbroadcast.HTLLBroadcast(
+                keypair[0], keypair[1], keypair[2], 2 ** 10, e.host, e.port, 128, 128
+            )
             hb._register_southbound(bc)
             bc._register_northbound(hb)
             bc._create()
@@ -134,7 +136,6 @@ class TestHTLLBroadcast(unittest.TestCase):
                 for i in range(n_messages):
                     nb._upon_deliver.assert_any_call(pid, unittest.mock.ANY, i)
 
-
         # n_messages = 2 ** 10
         # for i in range(n_messages):
         #     for bc in self.broadcasts:
@@ -147,6 +148,7 @@ class TestHTLLBroadcast(unittest.TestCase):
         #         pid = bc.pubkeyhash
         #         for i in range(n_messages):
         #             nb._upon_deliver.assert_any_call(pid, unittest.mock.ANY, i)
+
     #
     # def test_agreement(self):
     #     n_messages = 2 ** 10

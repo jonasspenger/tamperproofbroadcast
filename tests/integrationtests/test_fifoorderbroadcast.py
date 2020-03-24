@@ -115,7 +115,6 @@ class TestFIFOOrderBroadcast(unittest.TestCase):
                 for i in range(n_messages):
                     nb._upon_deliver.assert_any_call(pid, unittest.mock.ANY, i)
 
-
         # n_messages = 2 ** 10
         # for i in range(n_messages):
         #     for bc in self.broadcasts:
@@ -128,6 +127,7 @@ class TestFIFOOrderBroadcast(unittest.TestCase):
         #         pid = bc.pubkeyhash
         #         for i in range(n_messages):
         #             nb._upon_deliver.assert_any_call(pid, unittest.mock.ANY, i)
+
     #
     # def test_agreement(self):
     #     n_messages = 2 ** 10

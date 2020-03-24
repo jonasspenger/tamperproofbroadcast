@@ -71,7 +71,9 @@ class TotalOrderBroadcast(module.Module):
     def _stop(self):
         self.stop_event.set()
 
-    def __init__(self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2**10):
+    def __init__(
+        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 10
+    ):
         self.southbound = None
         self.filesystem = None
         self.waiting = {}

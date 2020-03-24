@@ -14,7 +14,17 @@ logger = logging.getLogger("tamperproofbroadcast")
 
 
 class HTLLBroadcast(module.Module):
-    def __init__(self, fifoprivkey=None, fifopubkeyhash=None, fifoprevtxhash=None, fifoqueuesize=2**10, etcdhost=None, etcdport=None, etcdqueuesize=128, etcdbatchsize=128):
+    def __init__(
+        self,
+        fifoprivkey=None,
+        fifopubkeyhash=None,
+        fifoprevtxhash=None,
+        fifoqueuesize=2 ** 10,
+        etcdhost=None,
+        etcdport=None,
+        etcdqueuesize=128,
+        etcdbatchsize=128,
+    ):
         self.privkey = fifoprivkey
         self.pubkeyhash = fifopubkeyhash
         self.prevtxhash = fifoprevtxhash
@@ -56,7 +66,6 @@ class HTLLBroadcast(module.Module):
                 pass
             time.sleep(5)
 
-
     def _start(self):
         self.etcdbroadcast._start()
         threading.Thread(target=self._timeout_anchor, daemon=True).start()
@@ -70,6 +79,8 @@ class HTLLBroadcast(module.Module):
 
     def _uncreate(self):
         self.etcdbroadcast._uncreate()
+
+
 #
 # import time
 #

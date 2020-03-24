@@ -3,26 +3,35 @@ import sys
 sys.path.append("tamperproofbroadcast")
 
 from google.cloud import storage
+import logging
 import time
 import os
 import tamperproofbroadcast
-import etcdbroadcast
-import batchingbroadcast
 import module
 
 
 class Benchmark(module.Module):
-    def __init__(self, duration=5, testid="test-1"):
+    def __init__(self, duration=5, testid="test-1", bucketname=None):
         self.duration = int(duration)
         self.testid = testid
+        self.bucketname = bucketname
 
     def _start(self):
+        logging.info("starting benchmark")
         t0 = time.time()
         messagenumber = 0
+        deliverednumber = 0
         fname = self.testid + ".log"
         f = open(fname, "w")
         f.write("operation processid messagenumber time\n")
+        logt = int(time.time())
         while time.time() < t0 + self.duration:
+            if int(time.time()) > logt + 5:
+                logt = int(time.time())
+                logging.info(
+                    "%s broadcast messages and %s delivered messages after %s seconds"
+                    % (messagenumber, deliverednumber, int(time.time() - t0))
+                )
             try:
                 message = (self.testid, messagenumber, os.urandom(256))
                 self.southbound.broadcast(message)
@@ -41,8 +50,8 @@ class Benchmark(module.Module):
             except Exception as e:
                 f.write(str(e))
             try:
-                for _ in range(128):
-                    message = self.southbound.deliver()
+                for _ in range(2056):
+                    message = self.southbound.deliver()[2]
                     logmessage = (
                         "deliver"
                         + " "
@@ -54,13 +63,22 @@ class Benchmark(module.Module):
                         + "\n"
                     )
                     f.write(logmessage)
+                    deliverednumber = deliverednumber + 1
             except Exception as e:
                 f.write(str(e) + "\n")
         f.close()
-        client = storage.Client()
-        bucket = client.get_bucket("tpbexperiment")
-        blob = bucket.blob(fname)
-        blob.upload_from_filename(fname)
+        logging.info(
+            "%s broadcast messages and %s delivered messages after %s seconds"
+            % (messagenumber, deliverednumber, int(time.time() - t0))
+        )
+        logging.info("benchmark finished")
+        if self.bucketname is not None:
+            logging.info("uploading file to google cloud storage")
+            client = storage.Client()
+            bucket = client.get_bucket(self.bucketname)
+            blob = bucket.blob(fname)
+            blob.upload_from_filename(fname)
+            logging.getLogger.info("upload finished")
 
 
 if __name__ == "__main__":
@@ -70,36 +88,21 @@ if __name__ == "__main__":
         parents=[
             Benchmark._Parser(),
             tamperproofbroadcast.TamperProofBroadcast._Parser(),
-            batchingbroadcast.BatchingBroadcast._Parser(),
-            etcdbroadcast.ETCDBroadcast._Parser(),
         ]
     )
+    parser.add_argument("--logginglevel", default="INFO")
     args = parser.parse_args()
+    logging.getLogger().setLevel(args.logginglevel)
 
-    etcdbc = etcdbroadcast.ETCDBroadcast._Init(args)
-    bb = batchingbroadcast.BatchingBroadcast._Init(args)
-    tpbc = tamperproofbroadcast.TamperProofBroadcast._Init(args)
-    b = Benchmark._Init(args)
-
-    etcdbc._register_northbound(bb)
-    bb._register_northbound(tpbc)
-    tpbc._register_northbound(b)
-
-    b._register_southbound(tpbc)
-    tpbc._register_southbound(bb)
-    bb._register_southbound(etcdbc)
-
-    etcdbc._create()
-    bb._create()
-    tpbc._create()
-    b._create()
-
-    etcdbc._start()
-    bb._start()
-    tpbc._start()
-    b._start()
-
-    b._stop()
-    tpbc._stop()
-    bb._stop()
-    etcdbc._stop()
+    tpb = tamperproofbroadcast.TamperProofBroadcast._Init(args)
+    bench = Benchmark._Init(args)
+    tpb._register_northbound(bench)
+    bench._register_southbound(tpb)
+    tpb._create()
+    bench._create()
+    tpb._start()
+    bench._start()
+    bench._stop()
+    tpb._stop()
+    bench._uncreate()
+    tpb._uncreate()

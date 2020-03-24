@@ -67,11 +67,11 @@ class _ETCDBroadcast(module.Module):
                 "grpc.max_receive_message_length": -1,
             }.items(),
         )
+        self.etcdclient.status()
         threading.Thread(target=self._deliver, daemon=True).start()
 
     def _stop(self):
-        self.cancel()
-        time.sleep(1)
+        del self.etcdclient
 
     def _create(self):
         datadir = tempfile.mkdtemp()

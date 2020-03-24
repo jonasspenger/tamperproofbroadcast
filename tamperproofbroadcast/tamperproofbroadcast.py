@@ -1,5 +1,6 @@
 import logging.config
 import threading
+import argparse
 import logging
 import inspect
 import sys
@@ -86,8 +87,6 @@ class TamperProofBroadcast(module.Module):
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser(parents=[TamperProofBroadcast._Parser(),])
     parser.add_argument("--logginglevel", default="INFO")
     args = parser.parse_args()

@@ -75,7 +75,7 @@ class FOTB(module.Module):
         self.southbound._stop()
 
     def __init__(
-        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 10
+        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 7
     ):
         self.southbound = None
         self.filesystem = None
@@ -91,7 +91,7 @@ class FOTB(module.Module):
         self.stop_event = threading.Event()
 
     def broadcast(self, message):
-        logger.info("upon_broadcast: %s", message)
+        logger.debug("broadcast: %s", message)
         self.queue.put(message)
 
     def _timeout_broadcast(self):
@@ -106,7 +106,7 @@ class FOTB(module.Module):
                     size += sys.getsizeof(message)
                 except:
                     pass
-                if t + 0.1 < time.time() or size > 100000:
+                if t + 0.1 < time.time() or size > 2 ** 11:
                     break
             if messages != []:
                 signedtransaction = self._createTransaction(
@@ -172,7 +172,7 @@ class FOTB(module.Module):
                                 continue
                             self.delivered[txid] = transaction["hex"]
                             for message in messages:
-                                logger.info(
+                                logger.debug(
                                     "trigger deliver: pid=%s; txid=%s; message=%s"
                                     % (pid, txid, message)
                                 )
@@ -183,7 +183,7 @@ class FOTB(module.Module):
                             self.lock.release()
                         except Exception as e:
                             logger.error("error: %s", e)
-                time.sleep(5.0)
+                time.sleep(1.0)
             except Exception as e:
                 logger.error("error: %s", e)
                 raise
@@ -193,7 +193,7 @@ class FOTB(module.Module):
             try:
                 return self.deliverqueue.get_nowait()
             except:
-                raise Exception("nothing to deliver")
+                raise Exception({"error": "nothing to deliver"})
         else:
             return self.deliverqueue.get()
 
@@ -213,17 +213,18 @@ class HTLLTB(module.Module):
         self.stop_event = threading.Event()
         self.pid = str(round(time.time()))
         self.txid = 0
+        self._handle_exit(sys.exit)
         super().__init__()
 
     def broadcast(self, message):
         msg = (self.pid, self.txid, message)
-        logger.info("broadcast: message=%s", msg)
+        logger.debug("broadcast: message=%s", msg)
         self.southbound["etcd"].broadcast(msg)
         self.txid = self.txid + 1
 
     def deliver(self, blocking=False):
         msg = self.southbound["etcd"].deliver(blocking)
-        logger.info("deliver: message=%s" % (msg,))
+        logger.debug("deliver: message=%s" % (msg,))
         self.log.append(msg)
         self.mth.update(self._pack(msg).encode())
         self.n = self.n + 1
@@ -232,7 +233,7 @@ class HTLLTB(module.Module):
     def _timeout_anchor(self):
         while not self.stop_event.is_set():
             message = (self.n, self.mth.digest())
-            logger.info("anchoring: message=%s" % (message,))
+            logger.debug("anchoring: message=%s" % (message,))
             self.southbound["fotb"].broadcast(message)
             try:
                 for _ in range(128):
@@ -271,13 +272,13 @@ class HTLLTBTEST(module.Module):
 
     def broadcast(self, message):
         msg = (self.pid, self.txid, message)
-        logger.info("broadcast: message=%s", msg)
+        logger.debug("broadcast: message=%s", msg)
         self.southbound["etcd"].broadcast(msg)
         self.txid = self.txid + 1
 
     def deliver(self, blocking=False):
         msg = self.southbound["etcd"].deliver(blocking)
-        logger.info("deliver: message=%s" % (msg,))
+        logger.debug("deliver: message=%s" % (msg,))
         return msg
 
     def _start(self):
@@ -328,6 +329,7 @@ class TOTB(module.Module):
         return txhash
 
     def _start(self):
+        self.southbound._start()
         if self.prevtxhash is None and self.privkey is None and self.pubkeyhash is None:
             (
                 self.privkey,
@@ -348,6 +350,8 @@ class TOTB(module.Module):
 
     def _stop(self):
         self.stop_event.set()
+        time.sleep(1)
+        self.southbound._stop()
 
     def __init__(
         self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 10
@@ -366,7 +370,7 @@ class TOTB(module.Module):
         self.stop_event = threading.Event()
 
     def broadcast(self, message):
-        logger.info("upon_broadcast: %s", message)
+        logger.debug("broadcast: %s", message)
         self.queue.put(message)
 
     def _timeout_broadcast(self):
@@ -381,7 +385,7 @@ class TOTB(module.Module):
                     size += sys.getsizeof(message)
                 except:
                     pass
-                if t + 0.1 < time.time() or size > 100000:
+                if t + 0.1 < time.time() or size > 2 ** 11:
                     break
             if messages != []:
                 signedtransaction = self._createTransaction(
@@ -429,7 +433,7 @@ class TOTB(module.Module):
                                 continue
                             pid, txid, messages = utx
                             for message in messages:
-                                logger.info(
+                                logger.debug(
                                     "trigger deliver: pid=%s; txid=%s; message=%s"
                                     % (pid, txid, message)
                                 )
@@ -450,7 +454,7 @@ class TOTB(module.Module):
             try:
                 return self.deliverqueue.get_nowait()
             except:
-                raise Exception("nothing to deliver")
+                raise Exception({"error": "nothing to deliver"})
         else:
             return self.deliverqueue.get()
 

@@ -7,6 +7,23 @@
 ## Tests
 
 ## Benchmarks
+Runs a broadcast and deliver workload for a set duration, and saves results to a file.
+If google storage bucket name is set, it is also uploaded there.
+```
+python3 tests/benchmarks/benchmark.py -h
+python3 tests/benchmarks/benchmark.py fotb -h
+python3 tests/benchmarks/benchmark.py totb -h
+python3 tests/benchmarks/benchmark.py htlltb -h
+python3 tests/benchmarks/benchmark.py htlltbtest -h
+```
+
+Run all benchmarks for a duration of 60 seconds:
+```
+python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-0 fotb --multichain-create=True
+python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-1 totb --multichain-create=True
+python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-2 htlltb --etcd-create=True --multichain-create=True
+python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-3 htlltbtest --etcd-create=True --multichain-create=True
+```
 
 ## Design
 The architecture consists of three layers:

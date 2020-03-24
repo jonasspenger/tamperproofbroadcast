@@ -16,8 +16,8 @@ logger = logging.getLogger("module")
 
 class Module:
     def __init__(self):
-        self.northbound = None
-        self.southbound = None
+        self.northbound = {}
+        self.southbound = {}
 
     def _create(self):
         pass
@@ -31,11 +31,17 @@ class Module:
     def _stop(self):
         pass
 
-    def _register_northbound(self, registrant):
-        self.northbound = registrant
+    def _register_northbound(self, registrant, name=None):
+        if name is not None:
+            self.northbound[name] = registrant
+        else:
+            self.northbound = registrant
 
-    def _register_southbound(self, registrant):
-        self.southbound = registrant
+    def _register_southbound(self, registrant, name=None):
+        if name is not None:
+            self.southbound[name] = registrant
+        else:
+            self.southbound = registrant
 
     funcs = []
 
@@ -101,15 +107,19 @@ class Module:
                 param.default if param.default is not inspect.Parameter.empty else None
             )
             group1.add_argument(
-                "--".lower() + param.name, default=default, required=False
+                "--" + cls.__name__.lower() + "-" + param.name,
+                default=default,
+                required=False,
             )
         return parser
 
     @classmethod
     def _Init(cls, args):
+        prefix = cls.__name__.lower() + "_"
         kwargs = {
-            k: v
+            k[len(prefix) :]: v
             for k, v in vars(args).items()
-            if k in inspect.signature(cls).parameters
+            if k.startswith(prefix)
+            and k[len(prefix) :] in inspect.signature(cls).parameters
         }
         return cls(**kwargs)

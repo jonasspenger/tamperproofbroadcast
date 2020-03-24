@@ -71,6 +71,7 @@ class _ETCDBroadcast(module.Module):
 
     def _stop(self):
         self.cancel()
+        time.sleep(1)
 
     def _create(self):
         datadir = tempfile.mkdtemp()
@@ -109,11 +110,14 @@ class _BatchingBroadcast(module.Module):
             self.southbound.broadcast(self.batch)
             self.nextpos = 0
 
-    def deliver(self):
-        try:
-            return self.queue.get_nowait()
-        except:
-            raise Exception({"error": "no message to deliver"})
+    def deliver(self, blocking=False):
+        if blocking == False:
+            try:
+                return self.queue.get_nowait()
+            except:
+                raise Exception({"error": "no message to deliver"})
+        else:
+            return self.queue.get()
 
     def _deliver(self):
         while not self.stop_event.is_set():
@@ -128,14 +132,18 @@ class _BatchingBroadcast(module.Module):
 
     def _stop(self):
         self.stop_event.set()
+        time.sleep(1)
 
 
 class ETCD(module.Module):
-    def __init__(self, host=None, port=None, queuesize=128, batchsize=128):
+    def __init__(
+        self, host=None, port=None, queuesize=128, batchsize=128, create=False
+    ):
         self.port = port
         self.host = host
-        self.queuesize = queuesize
-        self.batchsize = batchsize
+        self.queuesize = int(queuesize)
+        self.batchsize = int(batchsize)
+        self.create = bool(create)
         if self.host == None:
             self.host = "localhost"
         if self.port == None:
@@ -148,24 +156,24 @@ class ETCD(module.Module):
         self.batchingbroadcast._register_southbound(self.etcdbroadcast)
 
     def broadcast(self, message):
-        logger.info("broadcast: message=%s", message)
         return self.batchingbroadcast.broadcast(message)
 
-    def deliver(self):
-        message = self.batchingbroadcast.deliver()
-        logger.info("deliver: message=%s" % (message,))
+    def deliver(self, blocking=False):
+        message = self.batchingbroadcast.deliver(blocking)
         return message
 
     def _create(self):
-        logger.info("creating etcd at %s:%s" % (self.host, self.port))
-        self.etcdbroadcast._create()
-        self.batchingbroadcast._create()
-        logger.info("finished creating etcd at %s:%s" % (self.host, self.port))
+        if self.create:
+            logger.info("creating etcd at %s:%s" % (self.host, self.port))
+            self.etcdbroadcast._create()
+            self.batchingbroadcast._create()
+            logger.info("finished creating etcd at %s:%s" % (self.host, self.port))
 
     def _uncreate(self):
-        logger.info("uncreating etcd")
-        self.batchingbroadcast._uncreate()
-        self.etcdbroadcast._uncreate()
+        if self.create:
+            logger.info("uncreating etcd")
+            self.batchingbroadcast._uncreate()
+            self.etcdbroadcast._uncreate()
 
     def _start(self):
         logger.info("starting etcd at %s:%s" % (self.host, self.port))

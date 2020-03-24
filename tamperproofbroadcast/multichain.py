@@ -11,7 +11,7 @@ import os
 import module
 
 logging.config.fileConfig(os.path.join(os.path.dirname(__file__), "logging.conf"))
-logger = logging.getLogger("blockchain")
+logger = logging.getLogger("multichain")
 
 
 class MultiChain(multichaincli.Multichain, module.Module):
@@ -30,19 +30,21 @@ class MultiChain(multichaincli.Multichain, module.Module):
 
     def __init__(
         self,
-        rpcuser="user",
-        rpcpasswd="password",
-        rpcport=None,
-        rpchost="localhost",
+        user="user",
+        passwd="password",
+        port=None,
+        host="localhost",
         chainname=None,
         datadir=None,
+        create=False,
     ):
-        self.rpcuser = rpcuser
-        self.rpcpasswd = rpcpasswd
-        self.rpcport = rpcport
-        self.rpchost = rpchost
+        self.rpcuser = user
+        self.rpcpasswd = passwd
+        self.rpcport = port
+        self.rpchost = host
         self.chainname = chainname
         self.datadir = datadir
+        self.create = bool(create)
         if self.rpcport is None:
             self.rpcport = port_for.select_random()
         if self.chainname is None:
@@ -60,57 +62,59 @@ class MultiChain(multichaincli.Multichain, module.Module):
         self._handle_exit(sys.exit)
 
     def _create(self):
-        if "@" not in self.chainname:
-            logger.info("creating blockchain: %s" % self.chainname)
+        if self.create == True:
+            if "@" not in self.chainname:
+                logger.info("creating blockchain: %s" % self.chainname)
+                self._execute_command(
+                    "multichain-util create %s -datadir=%s -anyone-can-connect=true -anyone-can-send=true -anyone-can-receive=true -anyone-can-mine=true -target-block-time=5 -mining-turnover=1.0"
+                    % (self.chainname, self.datadir)
+                )
+            logger.info(
+                "starting blockchain daemon: %s at %s:%s"
+                % (self.chainname, self.rpchost, self.rpcport)
+            )
             self._execute_command(
-                "multichain-util create %s -datadir=%s -anyone-can-connect=true -anyone-can-send=true -anyone-can-receive=true -anyone-can-mine=true -target-block-time=5 -mining-turnover=1.0"
-                % (self.chainname, self.datadir)
+                "multichaind %s -rpcuser=%s -rpcpassword=%s -rpcport=%s -rpchost=%s -datadir=%s -port=%s"
+                % (
+                    self.chainname,
+                    self.rpcuser,
+                    self.rpcpasswd,
+                    self.rpcport,
+                    self.rpchost,
+                    self.datadir,
+                    port_for.select_random(),
+                ),
+                daemon=True,
             )
-        logger.info(
-            "starting blockchain daemon: %s at %s:%s"
-            % (self.chainname, self.rpchost, self.rpcport)
-        )
-        self._execute_command(
-            "multichaind %s -rpcuser=%s -rpcpassword=%s -rpcport=%s -rpchost=%s -datadir=%s -port=%s"
-            % (
-                self.chainname,
-                self.rpcuser,
-                self.rpcpasswd,
-                self.rpcport,
-                self.rpchost,
-                self.datadir,
-                port_for.select_random(),
-            ),
-            daemon=True,
-        )
-        logger.info("waiting for blockchain daemon")
-        self._execute_command(
-            "multichain-cli %s -rpcuser=%s -rpcpassword=%s -rpcport=%s -rpchost=%s -datadir=%s -rpcwait getinfo"
-            % (
-                self.chainname,
-                self.rpcuser,
-                self.rpcpasswd,
-                self.rpcport,
-                self.rpchost,
-                self.datadir,
+            logger.info("waiting for blockchain daemon")
+            self._execute_command(
+                "multichain-cli %s -rpcuser=%s -rpcpassword=%s -rpcport=%s -rpchost=%s -datadir=%s -rpcwait getinfo"
+                % (
+                    self.chainname,
+                    self.rpcuser,
+                    self.rpcpasswd,
+                    self.rpcport,
+                    self.rpchost,
+                    self.datadir,
+                )
             )
-        )
-        logger.info("blockchain daemon started")
+            logger.info("blockchain daemon started")
 
     def _uncreate(self):
-        logger.info("stopping blockchain daemon: %s" % (self.chainname))
-        self._execute_command(
-            "multichain-cli %s -rpcuser=%s -rpcpassword=%s -rpcport=%s -rpchost=%s -datadir=%s stop"
-            % (
-                self.chainname,
-                self.rpcuser,
-                self.rpcpasswd,
-                self.rpcport,
-                self.rpchost,
-                self.datadir,
+        if self.create == True:
+            logger.info("stopping blockchain daemon: %s" % (self.chainname))
+            self._execute_command(
+                "multichain-cli %s -rpcuser=%s -rpcpassword=%s -rpcport=%s -rpchost=%s -datadir=%s stop"
+                % (
+                    self.chainname,
+                    self.rpcuser,
+                    self.rpcpasswd,
+                    self.rpcport,
+                    self.rpchost,
+                    self.datadir,
+                )
             )
-        )
-        logger.info("blockchain daemon stopped")
+            logger.info("blockchain daemon stopped")
 
     @retrying.retry(wait_random_min=100, wait_random_max=2000, stop_max_delay=60000)
     def _create_utxo(self, pubkeyhash):

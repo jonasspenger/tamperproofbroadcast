@@ -71,7 +71,7 @@ class FIFOOrderBroadcast(module.Module):
     def _stop(self):
         self.stop_event.set()
 
-    def __init__(self, privkey=None, pubkeyhash=None, prevtxhash=None):
+    def __init__(self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2**10):
         self.southbound = None
         self.filesystem = None
         self.waiting = {}
@@ -81,7 +81,8 @@ class FIFOOrderBroadcast(module.Module):
         self.privkey = privkey
         self.pubkeyhash = pubkeyhash
         self.prevtxhash = prevtxhash
-        self.queue = queue.Queue()
+        self.queue = queue.Queue(maxsize=queuesize)
+        self.deliverqueue = queue.Queue(maxsize=queuesize)
         self.stop_event = threading.Event()
 
     def broadcast(self, message):
@@ -135,7 +136,7 @@ class FIFOOrderBroadcast(module.Module):
                         "previousblockhash", None
                     )
                 newledger.reverse()
-                self.oldledger = self.ledger[self.ledger.index(bbh) + 1:]
+                self.oldledger = self.ledger[self.ledger.index(bbh) + 1 :]
                 self.ledger = self.ledger[: self.ledger.index(bbh) + 1]
                 self.ledger.extend(newledger)
 
@@ -170,7 +171,7 @@ class FIFOOrderBroadcast(module.Module):
                                     "trigger deliver: pid=%s; txid=%s; message=%s"
                                     % (pid, txid, message)
                                 )
-                                self.northbound._upon_deliver(pid, txid, message)
+                                self.deliverqueue.put((pid, txid, message))
                             self.lock.acquire()
                             if txid in self.waiting:
                                 self.waiting.pop(txid)
@@ -181,3 +182,9 @@ class FIFOOrderBroadcast(module.Module):
             except Exception as e:
                 logger.error("error: %s", e)
                 raise
+
+    def deliver(self):
+        try:
+            return self.deliverqueue.get_nowait()
+        except:
+            raise Exception("nothing to deliver")

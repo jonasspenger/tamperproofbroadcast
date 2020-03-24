@@ -12,7 +12,7 @@ import multichain
 logging.disable(logging.CRITICAL)
 
 
-class TestTamperProofBroadcast(unittest.TestCase):
+class TestTotalOrderBroadcast(unittest.TestCase):
     def setUp(self):
         n_blockchains = 3
         self.blockchains = []
@@ -52,66 +52,77 @@ class TestTamperProofBroadcast(unittest.TestCase):
             b._uncreate()
             b._stop()
 
-    def test_fifo_order(self):
-        n_messages = 2 ** 10
-        for i in range(n_messages):
-            for bc in self.broadcasts:
-                bc.broadcast(i)
-
-        time.sleep(60)
-
-        for nb in self.northbounds:
-            for bc in self.broadcasts:
-                pid = bc.pubkeyhash
-                calls = [
-                    c[0][2] for c in nb._upon_deliver.call_args_list if c[0][0] == pid
-                ]
-                issorted = all(calls[i] <= calls[i + 1] for i in range(len(calls) - 1))
-                self.assertTrue(issorted)
-                self.assertTrue(len(calls) > 0)
-
-    def test_total_order(self):
-        n_messages = 2 ** 10
-        for i in range(n_messages):
-            for bc in self.broadcasts:
-                bc.broadcast(i)
-
-        time.sleep(60)
-
-        for nb1 in self.northbounds:
-            for nb2 in self.northbounds:
-                nb1calls = [call for call in nb1._upon_deliver.call_args_list]
-                nb2calls = [call for call in nb2._upon_deliver.call_args_list]
-                nb1callsintersect = [call for call in nb1calls if call in nb2calls]
-                nb2callsintersect = [call for call in nb2calls if call in nb1calls]
-                self.assertEqual(nb1callsintersect, nb2callsintersect)
-
-        for nb in self.northbounds:
-            self.assertTrue(len(nb._upon_deliver.call_args_list) > 0)
+    # def test_fifo_order(self):
+    #     n_messages = 2 ** 10
+    #     for i in range(n_messages):
+    #         for bc in self.broadcasts:
+    #             bc.broadcast(i)
+    #
+    #     time.sleep(60)
+    #
+    #     for nb in self.northbounds:
+    #         for bc in self.broadcasts:
+    #             pid = bc.pubkeyhash
+    #             calls = [
+    #                 c[0][2] for c in nb._upon_deliver.call_args_list if c[0][0] == pid
+    #             ]
+    #             issorted = all(calls[i] <= calls[i + 1] for i in range(len(calls) - 1))
+    #             self.assertTrue(issorted)
+    #             self.assertTrue(len(calls) > 0)
+    #
+    # def test_total_order(self):
+    #     n_messages = 2 ** 10
+    #     for i in range(n_messages):
+    #         for bc in self.broadcasts:
+    #             bc.broadcast(i)
+    #
+    #     time.sleep(60)
+    #
+    #     for nb1 in self.northbounds:
+    #         for nb2 in self.northbounds:
+    #             nb1calls = [call for call in nb1._upon_deliver.call_args_list]
+    #             nb2calls = [call for call in nb2._upon_deliver.call_args_list]
+    #             nb1callsintersect = [call for call in nb1calls if call in nb2calls]
+    #             nb2callsintersect = [call for call in nb2calls if call in nb1calls]
+    #             self.assertEqual(nb1callsintersect, nb2callsintersect)
+    #
+    #     for nb in self.northbounds:
+    #         self.assertTrue(len(nb._upon_deliver.call_args_list) > 0)
 
     def test_validity(self):
         n_messages = 2 ** 10
+
+        # broadcast
         for i in range(n_messages):
             for bc in self.broadcasts:
                 bc.broadcast(i)
 
-        time.sleep(60)
+        # synchronize
+        t = time.time()
+        while time.time() < t + 60:
+            for (nb, bc) in zip(self.northbounds, self.broadcasts):
+                try:
+                    msg = bc.deliver()
+                    nb._upon_deliver(*msg)
+                except:
+                    pass
 
+        # check
         for nb in self.northbounds:
             for bc in self.broadcasts:
                 pid = bc.pubkeyhash
                 for i in range(n_messages):
                     nb._upon_deliver.assert_any_call(pid, unittest.mock.ANY, i)
 
-    def test_agreement(self):
-        n_messages = 2 ** 10
-        for i in range(n_messages):
-            for bc in self.broadcasts:
-                bc.broadcast(i)
-
-        time.sleep(60)
-
-        for nb1 in self.northbounds:
-            for nb2 in self.northbounds:
-                for call in nb2._upon_deliver.call_args_list:
-                    nb1._upon_deliver.assert_any_call(*call[0])
+    # def test_agreement(self):
+    #     n_messages = 2 ** 10
+    #     for i in range(n_messages):
+    #         for bc in self.broadcasts:
+    #             bc.broadcast(i)
+    #
+    #     time.sleep(60)
+    #
+    #     for nb1 in self.northbounds:
+    #         for nb2 in self.northbounds:
+    #             for call in nb2._upon_deliver.call_args_list:
+    #                 nb1._upon_deliver.assert_any_call(*call[0])

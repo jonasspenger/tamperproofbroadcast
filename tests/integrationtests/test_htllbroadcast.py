@@ -7,15 +7,18 @@ import unittest
 import logging
 import time
 import fifoorderbroadcast
+import htllbroadcast
 import multichain
+import etcd
 
 logging.disable(logging.CRITICAL)
 
 
-class TestFIFOOrderBroadcast(unittest.TestCase):
+class TestHTLLBroadcast(unittest.TestCase):
     def setUp(self):
         n_blockchains = 3
         self.blockchains = []
+        self.fifobroadcasts = []
         self.broadcasts = []
         self.northbounds = []
 
@@ -23,6 +26,10 @@ class TestFIFOOrderBroadcast(unittest.TestCase):
         b._create()
         b._start()
         self.blockchains.append(b)
+
+        e = etcd.ETCD()
+        e._create()
+        e._start()
 
         keypairs = [b._create_funded_keypair() for _ in range(n_blockchains)]
 
@@ -40,13 +47,22 @@ class TestFIFOOrderBroadcast(unittest.TestCase):
             self.northbounds.append(northbound)
             bc._register_southbound(b)
             bc._register_northbound(northbound)
+            self.fifobroadcasts.append(bc)
+            hb = htllbroadcast.HTLLBroadcast(keypair[0], keypair[1], keypair[2], 2**10, e.host, e.port, 128, 128)
+            hb._register_southbound(bc)
+            bc._register_northbound(hb)
+            bc._create()
             bc._start()
-            self.broadcasts.append(bc)
+            hb._start()
+            self.broadcasts.append(hb)
 
-        time.sleep(10)
+        time.sleep(5)
 
     def tearDown(self):
         for bc in self.broadcasts:
+            bc._uncreate()
+            bc._stop()
+        for bc in self.fifobroadcasts:
             bc._uncreate()
             bc._stop()
         for b in self.blockchains:
@@ -91,16 +107,18 @@ class TestFIFOOrderBroadcast(unittest.TestCase):
     #         self.assertTrue(len(nb._upon_deliver.call_args_list) > 0)
     #
     def test_validity(self):
-        n_messages = 2 ** 10
+        n_messages = 2 ** 8
 
         # broadcast
+        print("broadcast")
         for i in range(n_messages):
             for bc in self.broadcasts:
                 bc.broadcast(i)
 
         # synchronize
+        print("synchronize")
         t = time.time()
-        while time.time() < t + 60:
+        while time.time() < t + 10:
             for (nb, bc) in zip(self.northbounds, self.broadcasts):
                 try:
                     msg = bc.deliver()
@@ -109,6 +127,7 @@ class TestFIFOOrderBroadcast(unittest.TestCase):
                     pass
 
         # check
+        print("check")
         for nb in self.northbounds:
             for bc in self.broadcasts:
                 pid = bc.pubkeyhash

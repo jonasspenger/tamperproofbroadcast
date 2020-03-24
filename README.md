@@ -22,7 +22,7 @@ Run all benchmarks for a duration of 60 seconds:
 python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-0 fotb --multichain-create=True
 python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-1 totb --multichain-create=True
 python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-2 htlltb --etcd-create=True --multichain-create=True
-python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-3 htlltbtest --etcd-create=True --multichain-create=True
+python3 tests/benchmarks/benchmark.py --benchmark-duration=60 --benchmark-testid=test-3 htlltbtest --etcd-create=True
 ```
 
 ## Design

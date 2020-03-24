@@ -27,11 +27,13 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # install python libraries
 RUN  pip3 install --upgrade pip \
   && pip3 install --trusted-host pypi.python.org grpcio==1.26.0 \
-  && pip3 install --trusted-host pypi.python.org etcd3==0.11.1 \
-  && pip3 install --trusted-host pypi.python.org Flask==1.1.1 \
-  && pip install --trusted-host pypi.python.org requests==2.23.0 \
-  && pip install --trusted-host pypi.python.org google-cloud-storage==1.26.0 \
-  && pip install --trusted-host pypi.python.org plyvel==1.2.0
+  &&  pip3 install --trusted-host pypi.python.org etcd3==0.11.1 \
+  && pip3 install --trusted-host pypi.python.org google-cloud-storage==1.26.0 \
+  && pip3 install --trusted-host pypi.python.org leveldb==0.201 \
+  && pip3 install --trusted-host pypi.python.org backoff==1.10.0 \
+  && pip3 install --trusted-host pypi.python.org retrying==1.3.3 \
+  && pip3 install --trusted-host pypi.python.org multichaincli==1.1.0 \
+  && pip3 install --trusted-host pypi.python.org port-for==0.4
 
 # final image
 FROM alpine:3.11
@@ -55,8 +57,7 @@ RUN apk add git
 # install python3
 RUN apk add python3
 # pull latest version of app
+RUN echo version 0.1
 RUN git clone https://github.com/jonasspenger/tamperproofbroadcast.git
-RUN python3 tamperproofbroadcast/tamperproofbroadcast/tamperproofbroadcastserver.py -h
-RUN python3 tamperproofbroadcast/tamperproofbroadcast/tamperproofbroadcastclient.py -h
-# start server
-CMD python3 tamperproofbroadcast/tamperproofbroadcast/tamperproofbroadcastserver.py
+RUN python3 tamperproofbroadcast/tamperproofbroadcast/tamperproofbroadcast.py -h
+RUN python3 tamperproofbroadcast/tests/benchmarks/benchmark.py -h

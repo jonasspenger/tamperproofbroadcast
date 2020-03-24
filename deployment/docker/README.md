@@ -17,6 +17,15 @@ docker run \
   tamperproofbroadcast;
 ```
 
+## Or, run and enter shell
+```
+docker run \
+  -it \
+  --rm \
+  tamperproofbroadcast \
+  /bin/ash;
+```
+
 ## Or, run from docker hub image
 ```
 docker run \

@@ -9,6 +9,7 @@ import argparse
 import logging
 import time
 import tamperproofbroadcast
+import multichain
 import etcd
 
 logging.disable(logging.CRITICAL)

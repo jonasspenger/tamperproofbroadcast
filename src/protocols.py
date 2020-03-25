@@ -83,6 +83,7 @@ class FOTB(module.Module):
         self.ledger = []
         self.privkey = privkey
         self.pubkeyhash = pubkeyhash
+        self.pid = pubkeyhash
         self.prevtxhash = prevtxhash
         self.queue = queue.Queue(maxsize=queuesize)
         self.deliverqueue = queue.Queue(maxsize=queuesize)
@@ -242,6 +243,7 @@ class HTLLTB(module.Module):
 
     def _timeout_anchor(self):
         while not self.stop_event.is_set():
+            time.sleep(30)
             message = (self.n, self.mth.digest())
             logger.debug("anchoring: message=%s" % (message,))
             self.southbound["fotb"].broadcast(message)
@@ -251,7 +253,6 @@ class HTLLTB(module.Module):
                     self.map[m[0]] = m[1]
             except:
                 pass
-            time.sleep(5)
 
     def _start(self):
         self.southbound["etcd"]._start()
@@ -374,6 +375,7 @@ class TOTB(module.Module):
         self.confirmed_height = 1
         self.privkey = privkey
         self.pubkeyhash = pubkeyhash
+        self.pid = pubkeyhash
         self.prevtxhash = prevtxhash
         self.queue = queue.Queue(maxsize=queuesize)
         self.deliverqueue = queue.Queue(maxsize=queuesize)

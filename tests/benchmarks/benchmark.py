@@ -78,7 +78,7 @@ class Benchmark(module.Module):
             bucket = client.get_bucket(self.bucketname)
             blob = bucket.blob(fname)
             blob.upload_from_filename(fname)
-            logging.getLogger.info("upload finished")
+            logging.info("upload finished")
 
 
 if __name__ == "__main__":

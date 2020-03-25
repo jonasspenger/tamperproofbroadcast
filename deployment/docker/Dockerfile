@@ -59,5 +59,5 @@ RUN apk add python3
 # pull latest version of app
 RUN echo version 0.1.1
 RUN git clone https://github.com/jonasspenger/tamperproofbroadcast.git
-RUN python3 tamperproofbroadcast/tamperproofbroadcast/tamperproofbroadcast.py -h
+RUN python3 tamperproofbroadcast/src/tamperproofbroadcast.py -h
 RUN python3 tamperproofbroadcast/tests/benchmarks/benchmark.py -h

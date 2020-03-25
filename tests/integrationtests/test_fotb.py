@@ -13,6 +13,7 @@ import multichain
 
 logging.disable(logging.CRITICAL)
 
+
 class TestFOTB(unittest.TestCase):
     def setUp(self):
         n_processes = 3
@@ -61,7 +62,7 @@ class TestFOTB(unittest.TestCase):
             for bc, hi in zip(self.broadcasts, self.histories):
                 bc.broadcast(i)
                 try:
-                    for _ in range(2**10):
+                    for _ in range(2 ** 10):
                         hi.append(bc.deliver())
                 except:
                     pass
@@ -82,4 +83,6 @@ class TestFOTB(unittest.TestCase):
                 pid = bc.pid
                 pid_history = [msg for msg in hi if msg[0] == pid]
                 seqnums = [msg[2] for msg in pid_history]
-                self.assertTrue(all(seqnums[i] < seqnums[i+1] for i in range(len(seqnums)-1)))
+                self.assertTrue(
+                    all(seqnums[i] < seqnums[i + 1] for i in range(len(seqnums) - 1))
+                )

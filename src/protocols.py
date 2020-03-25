@@ -73,7 +73,12 @@ class FOTB(module.Module):
         self.southbound._stop()
 
     def __init__(
-        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 7, startheight=0
+        self,
+        privkey=None,
+        pubkeyhash=None,
+        prevtxhash=None,
+        queuesize=2 ** 7,
+        startheight=0,
     ):
         self.southbound = None
         self.filesystem = None
@@ -141,7 +146,7 @@ class FOTB(module.Module):
                         self.ledger = [None]
                     else:
                         self.ledger = [
-                            self.southbound.getblock(self.startheight-1, 1).get(
+                            self.southbound.getblock(self.startheight - 1, 1).get(
                                 "previousblockhash", None
                             )
                         ]
@@ -365,7 +370,12 @@ class TOTB(module.Module):
         self.southbound._stop()
 
     def __init__(
-        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 7, startheight=0
+        self,
+        privkey=None,
+        pubkeyhash=None,
+        prevtxhash=None,
+        queuesize=2 ** 7,
+        startheight=0,
     ):
         self.southbound = None
         self.filesystem = None
@@ -379,7 +389,7 @@ class TOTB(module.Module):
         self.prevtxhash = prevtxhash
         self.queue = queue.Queue(maxsize=queuesize)
         self.deliverqueue = queue.Queue(maxsize=queuesize)
-        self.startheight=int(startheight)
+        self.startheight = int(startheight)
         self.stop_event = threading.Event()
 
     def broadcast(self, message):
@@ -433,7 +443,7 @@ class TOTB(module.Module):
                         self.ledger = [None]
                     else:
                         self.ledger = [
-                            self.southbound.getblock(self.startheight-1, 1).get(
+                            self.southbound.getblock(self.startheight - 1, 1).get(
                                 "previousblockhash", None
                             )
                         ]

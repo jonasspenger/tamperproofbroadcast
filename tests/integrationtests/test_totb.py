@@ -13,6 +13,7 @@ import multichain
 
 logging.disable(logging.CRITICAL)
 
+
 class TestTOTB(unittest.TestCase):
     def setUp(self):
         n_processes = 3
@@ -61,7 +62,7 @@ class TestTOTB(unittest.TestCase):
             for bc, hi in zip(self.broadcasts, self.histories):
                 bc.broadcast(i)
                 try:
-                    for _ in range(2**10):
+                    for _ in range(2 ** 10):
                         hi.append(bc.deliver())
                 except:
                     pass

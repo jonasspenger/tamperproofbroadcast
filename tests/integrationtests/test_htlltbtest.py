@@ -13,6 +13,7 @@ import etcd
 
 logging.disable(logging.CRITICAL)
 
+
 class TestHTLLTBTEST(unittest.TestCase):
     def setUp(self):
         n_processes = 3
@@ -23,10 +24,7 @@ class TestHTLLTBTEST(unittest.TestCase):
         self.e._create()
 
         for _ in range(n_processes):
-            args = argparse.Namespace(
-                protocol="htlltbtest",
-                etcd_port=self.e.port,
-            )
+            args = argparse.Namespace(protocol="htlltbtest", etcd_port=self.e.port,)
             tpb = tamperproofbroadcast.TamperProofBroadcast._Init(args)
             tpb._create()
             tpb._start()
@@ -52,7 +50,7 @@ class TestHTLLTBTEST(unittest.TestCase):
             for bc, hi in zip(self.broadcasts, self.histories):
                 bc.broadcast(i)
                 try:
-                    for _ in range(2**10):
+                    for _ in range(2 ** 10):
                         hi.append(bc.deliver())
                 except:
                     pass

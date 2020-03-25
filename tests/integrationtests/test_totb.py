@@ -29,9 +29,9 @@ class TestTOTB(unittest.TestCase):
             keypair
             args = argparse.Namespace(
                 protocol="totb",
-                fotb_privkey=keypair[0],
-                fotb_pubkeyhash=keypair[1],
-                fotb_prevtxhash=keypair[2],
+                totb_privkey=keypair[0],
+                totb_pubkeyhash=keypair[1],
+                totb_prevtxhash=keypair[2],
                 multichain_chainname=self.b.getinfo()["nodeaddress"],
                 multichain_create=True,
             )

@@ -12,10 +12,10 @@ python3 -m unittest discover tests/integrationtests -v
 
 Run specific test:
 ```
-python3 -m unittest tests.integrationtests.test_fotbroadcast -v
-python3 -m unittest tests.integrationtests.test_totbbroadcast -v
-python3 -m unittest tests.integrationtests.test_htllbroadcast -v
-python3 -m unittest tests.integrationtests.test_htlltestbroadcast -v
+python3 -m unittest tests.integrationtests.test_fotb -v
+python3 -m unittest tests.integrationtests.test_totb -v
+python3 -m unittest tests.integrationtests.test_htlltb -v
+python3 -m unittest tests.integrationtests.test_htlltbtest -v
 ```
 
 ## Benchmarks

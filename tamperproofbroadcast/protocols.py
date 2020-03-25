@@ -75,19 +75,20 @@ class FOTB(module.Module):
         self.southbound._stop()
 
     def __init__(
-        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 7
+        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 7, startheight=0
     ):
         self.southbound = None
         self.filesystem = None
         self.waiting = {}
         self.delivered = {}
         self.lock = threading.Lock()
-        self.ledger = [None]
+        self.ledger = []
         self.privkey = privkey
         self.pubkeyhash = pubkeyhash
         self.prevtxhash = prevtxhash
         self.queue = queue.Queue(maxsize=queuesize)
         self.deliverqueue = queue.Queue(maxsize=queuesize)
+        self.startheight = int(startheight)
         self.stop_event = threading.Event()
 
     def broadcast(self, message):
@@ -135,6 +136,15 @@ class FOTB(module.Module):
                 logger.debug("trigger get")
                 bbh = self.southbound.getbestblockhash()
                 newledger = []
+                if len(self.ledger) == 0:
+                    if self.startheight == 0:
+                        self.ledger = [None]
+                    else:
+                        self.ledger = [
+                            self.southbound.getblock(self.startheight, 1).get(
+                                "previousblockhash", None
+                            )
+                        ]
                 while bbh not in self.ledger:
                     newledger.append(bbh)
                     bbh = self.southbound.getblock(bbh, 1).get(
@@ -354,19 +364,20 @@ class TOTB(module.Module):
         self.southbound._stop()
 
     def __init__(
-        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 10
+        self, privkey=None, pubkeyhash=None, prevtxhash=None, queuesize=2 ** 7, startheight=0
     ):
         self.southbound = None
         self.filesystem = None
         self.waiting = {}
         self.lock = threading.Lock()
-        self.ledger = [None]
+        self.ledger = []
         self.confirmed_height = 1
         self.privkey = privkey
         self.pubkeyhash = pubkeyhash
         self.prevtxhash = prevtxhash
         self.queue = queue.Queue(maxsize=queuesize)
         self.deliverqueue = queue.Queue(maxsize=queuesize)
+        self.startheight=int(startheight)
         self.stop_event = threading.Event()
 
     def broadcast(self, message):
@@ -414,6 +425,17 @@ class TOTB(module.Module):
                 logger.debug("trigger get")
                 bbh = self.southbound.getbestblockhash()
                 newledger = []
+
+                if len(self.ledger) == 0:
+                    if self.startheight == 0:
+                        self.ledger = [None]
+                    else:
+                        self.ledger = [
+                            self.southbound.getblock(self.startheight, 1).get(
+                                "previousblockhash", None
+                            )
+                        ]
+
                 while bbh not in self.ledger:
                     newledger.append(bbh)
                     bbh = self.southbound.getblock(bbh, 1).get(

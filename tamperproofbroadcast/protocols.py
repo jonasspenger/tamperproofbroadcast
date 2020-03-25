@@ -7,9 +7,7 @@ import queue
 import time
 import sys
 import os
-import multichain
 import module
-import etcd
 
 logging.config.fileConfig(os.path.join(os.path.dirname(__file__), "logging.conf"))
 logger = logging.getLogger("tamperproofbroadcast")
@@ -127,7 +125,7 @@ class FOTB(module.Module):
                 logger.debug("trigger append: %s", txhash)
                 self._sendTransaction(signedtransaction)
             self.lock.release()
-            time.sleep(35.0)
+            time.sleep(600.0)
 
     def _timeout_deliver(self):
         while not self.stop_event.is_set():
@@ -418,7 +416,7 @@ class TOTB(module.Module):
                 logger.debug("trigger append: %s", txhash)
                 self._sendTransaction(signedtransaction)
             self.lock.release()
-            time.sleep(35.0)
+            time.sleep(600.0)
 
     def _timeout_deliver(self):
         while not self.stop_event.is_set():

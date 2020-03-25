@@ -1,19 +1,18 @@
 import multiprocessing
 import logging.config
 import threading
-import backoff
 import tempfile
 import binascii
+import port_for
+import backoff
 import logging
 import pickle
 import shutil
 import queue
-import port_for
 import etcd3
+import time
 import os
 import module
-import time
-import inspect
 
 logging.config.fileConfig(os.path.join(os.path.dirname(__file__), "logging.conf"))
 logger = logging.getLogger("etcd")

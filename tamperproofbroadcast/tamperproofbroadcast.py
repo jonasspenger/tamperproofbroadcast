@@ -16,11 +16,6 @@ logger = logging.getLogger("tamperproofbroadcast")
 
 
 class TamperProofBroadcast(module.Module):
-    def __init__(self, protocol="ftb", **kwargs):
-        self.protocol = protocol
-        if self.protocol == "ftb":
-            return fifoorderbroadcast.FIFOOrderBroadcast(**kwargs)
-
     @classmethod
     def _Parser(cls):
         parser = argparse.ArgumentParser(add_help=False)

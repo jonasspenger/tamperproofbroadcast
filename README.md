@@ -5,6 +5,18 @@
 ## Usage
 
 ## Tests
+Run all integration tests:
+```
+python3 -m unittest discover tests/integrationtests -v
+```
+
+Run specific test:
+```
+python3 -m unittest tests.integrationtests.test_fotbroadcast -v
+python3 -m unittest tests.integrationtests.test_totbbroadcast -v
+python3 -m unittest tests.integrationtests.test_htllbroadcast -v
+python3 -m unittest tests.integrationtests.test_htlltestbroadcast -v
+```
 
 ## Benchmarks
 Runs a broadcast and deliver workload for a set duration, and saves results to a file.

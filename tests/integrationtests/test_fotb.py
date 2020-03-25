@@ -14,7 +14,7 @@ import etcd
 
 logging.disable(logging.CRITICAL)
 
-class TestFIFOBroadcast(unittest.TestCase):
+class TestFOTB(unittest.TestCase):
     def setUp(self):
         n_processes = 3
         self.broadcasts = []

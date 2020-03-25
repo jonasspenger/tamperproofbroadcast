@@ -9,30 +9,23 @@ import argparse
 import logging
 import time
 import tamperproofbroadcast
-import multichain
+import etcd
 
 logging.disable(logging.CRITICAL)
 
-class TestFOTB(unittest.TestCase):
+class TestHTLLTBTEST(unittest.TestCase):
     def setUp(self):
         n_processes = 3
         self.broadcasts = []
         self.histories = []
 
-        self.b = multichain.MultiChain(create=True)
-        self.b._create()
-        self.b._start()
-        time.sleep(10)  # wait for boot up
-        keypairs = [self.b._create_funded_keypair() for _ in range(n_processes)]
+        self.e = etcd.ETCD(create=True)
+        self.e._create()
 
-        for keypair, i in zip(keypairs, range(n_processes)):
+        for _ in range(n_processes):
             args = argparse.Namespace(
-                protocol="fotb",
-                fotb_privkey=keypair[0],
-                fotb_pubkeyhash=keypair[1],
-                fotb_prevtxhash=keypair[2],
-                multichain_chainname=self.b.getinfo()["nodeaddress"],
-                multichain_create=True,
+                protocol="htlltbtest",
+                etcd_port=self.e.port,
             )
             tpb = tamperproofbroadcast.TamperProofBroadcast._Init(args)
             tpb._create()
@@ -40,7 +33,6 @@ class TestFOTB(unittest.TestCase):
             self.broadcasts.append(tpb)
             history = []
             self.histories.append(history)
-        time.sleep(10)  # wait for boot up
 
     def tearDown(self):
         for bc in self.broadcasts:
@@ -48,10 +40,9 @@ class TestFOTB(unittest.TestCase):
             bc._uncreate()
         for history in self.histories:
             del history
-        self.b._stop()
-        self.b._uncreate()
+        self.e._uncreate()
 
-    def test_fifo_order(self):
+    def test_total_order(self):
         test_time = 60
 
         # broadcast and deliver for test_time seconds
@@ -76,10 +67,8 @@ class TestFOTB(unittest.TestCase):
                 pid = bc.pid
                 pid_history = [msg for msg in hi if msg[0] == pid]
                 self.assertTrue(len(pid_history) > 0)
-        # check each history was delivered in FIFO order with increasing message number (i)
-        for hi in self.histories:
-            for bc in self.broadcasts:
-                pid = bc.pid
-                pid_history = [msg for msg in hi if msg[0] == pid]
-                seqnums = [msg[2] for msg in pid_history]
-                self.assertTrue(all(seqnums[i] < seqnums[i+1] for i in range(len(seqnums)-1)))
+        # check shortest history is equal to prefix of other histories
+        for els in zip(*self.histories):
+            e = els[0]
+            for el in els:
+                self.assertEqual(e, el)

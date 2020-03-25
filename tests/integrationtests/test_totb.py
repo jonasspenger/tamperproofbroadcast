@@ -26,7 +26,6 @@ class TestTOTB(unittest.TestCase):
         keypairs = [self.b._create_funded_keypair() for _ in range(n_processes)]
 
         for keypair, i in zip(keypairs, range(n_processes)):
-            keypair
             args = argparse.Namespace(
                 protocol="totb",
                 totb_privkey=keypair[0],
@@ -71,6 +70,12 @@ class TestTOTB(unittest.TestCase):
         # check all histories longer than 0
         for hi in self.histories:
             self.assertTrue(len(hi) > 0)
+        # check history from other pids longer than 0
+        for hi in self.histories:
+            for bc in self.broadcasts:
+                pid = bc.pid
+                pid_history = [msg for msg in hi if msg[0] == pid]
+                self.assertTrue(len(pid_history) > 0)
         # check shortest history is equal to prefix of other histories
         for els in zip(*self.histories):
             e = els[0]

@@ -136,15 +136,17 @@ class FOTB(module.Module):
                 logger.debug("trigger get")
                 bbh = self.southbound.getbestblockhash()
                 newledger = []
+
                 if len(self.ledger) == 0:
                     if self.startheight == 0:
                         self.ledger = [None]
                     else:
                         self.ledger = [
-                            self.southbound.getblock(self.startheight, 1).get(
+                            self.southbound.getblock(self.startheight-1, 1).get(
                                 "previousblockhash", None
                             )
                         ]
+
                 while bbh not in self.ledger:
                     newledger.append(bbh)
                     bbh = self.southbound.getblock(bbh, 1).get(
@@ -431,7 +433,7 @@ class TOTB(module.Module):
                         self.ledger = [None]
                     else:
                         self.ledger = [
-                            self.southbound.getblock(self.startheight, 1).get(
+                            self.southbound.getblock(self.startheight-1, 1).get(
                                 "previousblockhash", None
                             )
                         ]

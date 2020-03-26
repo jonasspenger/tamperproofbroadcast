@@ -31,7 +31,7 @@ class _ETCDBroadcast(module.Module):
             self.etcdclient.put("broadcast", self._pack(message))
         except Exception as e:
             time.sleep(0.1)
-            raise({"error": "failed to broadcast message"})
+            raise Exception({"error": "failed to broadcast message"})
 
     def deliver(self):
         try:

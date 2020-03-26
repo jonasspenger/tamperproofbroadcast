@@ -48,7 +48,7 @@ class Benchmark(module.Module):
                 )
                 f.write(logmessage)
             except Exception as e:
-                f.write(str(e))
+                f.write(str(e) + "\n")
             try:
                 for _ in range(2056):
                     message = self.southbound.deliver()[2]

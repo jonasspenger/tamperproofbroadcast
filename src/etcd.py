@@ -31,7 +31,7 @@ class _ETCDBroadcast(module.Module):
             self.etcdclient.put("broadcast", self._pack(message))
         except Exception as e:
             time.sleep(0.1)
-            raise(e)
+            raise({"error": "failed to broadcast message"})
 
     def deliver(self):
         try:
@@ -107,10 +107,11 @@ class _BatchingBroadcast(module.Module):
 
     def broadcast(self, message):
         self.batch[self.nextpos] = message
-        self.nextpos = self.nextpos + 1
-        if self.nextpos == self.batchsize:
+        if self.nextpos == self.batchsize - 1:
             self.southbound.broadcast(self.batch)
             self.nextpos = 0
+        else:
+            self.nextpos = self.nextpos + 1
 
     def deliver(self, blocking=False):
         if blocking == False:

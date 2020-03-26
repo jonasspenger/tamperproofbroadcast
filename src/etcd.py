@@ -26,7 +26,7 @@ class _ETCDBroadcast(module.Module):
         self.queue = queue.Queue(maxsize=queuesize)
         self.cancel = None
 
-    @retrying.retry(wait_random_min=100, wait_random_max=2000, stop_max_delay=120000)
+    @retrying.retry(wait_random_min=100, wait_random_max=2000, stop_max_delay=300000)
     def broadcast(self, message):
         self.etcdclient.put("broadcast", self._pack(message))
 

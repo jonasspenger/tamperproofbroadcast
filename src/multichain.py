@@ -116,7 +116,7 @@ class MultiChain(multichaincli.Multichain, module.Module):
             )
             logger.info("blockchain daemon stopped")
 
-    @retrying.retry(wait_random_min=100, wait_random_max=2000, stop_max_delay=120000)
+    @retrying.retry(wait_random_min=100, wait_random_max=2000, stop_max_delay=300000)
     def _create_utxo(self, pubkeyhash):
         txid = self.send(pubkeyhash, 0)
         if "error" in txid:

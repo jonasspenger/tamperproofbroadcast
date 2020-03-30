@@ -2,6 +2,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "src"))
+sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 import unittest.mock
 import unittest
@@ -9,12 +10,13 @@ import argparse
 import logging
 import time
 import tamperproofbroadcast
+import test_mixin
 import multichain
 
 logging.disable(logging.CRITICAL)
 
 
-class TestFOTB(unittest.TestCase):
+class TestFOTB(test_mixin.TestMixin, unittest.TestCase):
     def setUp(self):
         n_processes = 3
         self.broadcasts = []
@@ -52,37 +54,14 @@ class TestFOTB(unittest.TestCase):
         self.b._stop()
         self.b._uncreate()
 
+    def test_total_order(self):
+        self.total_order(test_time=60)
+
     def test_fifo_order(self):
-        test_time = 60
+        self.fifo_order(test_time=60)
 
-        # broadcast and deliver for test_time seconds
-        t0 = time.time()
-        i = 0
-        while time.time() < t0 + test_time:
-            for bc, hi in zip(self.broadcasts, self.histories):
-                bc.broadcast(i)
-                try:
-                    for _ in range(2 ** 10):
-                        hi.append(bc.deliver())
-                except:
-                    pass
-            i = i + 1
+    def test_no_creation(self):
+        self.no_creation(test_time=60)
 
-        # check all histories longer than 0
-        for hi in self.histories:
-            self.assertTrue(len(hi) > 0)
-        # check history from other pids longer than 0
-        for hi in self.histories:
-            for bc in self.broadcasts:
-                pid = bc.pid
-                pid_history = [msg for msg in hi if msg[0] == pid]
-                self.assertTrue(len(pid_history) > 0)
-        # check each history was delivered in FIFO order with increasing message number (i)
-        for hi in self.histories:
-            for bc in self.broadcasts:
-                pid = bc.pid
-                pid_history = [msg for msg in hi if msg[0] == pid]
-                seqnums = [msg[2] for msg in pid_history]
-                self.assertTrue(
-                    all(seqnums[i] < seqnums[i + 1] for i in range(len(seqnums) - 1))
-                )
+    def test_no_duplication(self):
+        self.no_duplication(test_time=60)

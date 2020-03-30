@@ -2,6 +2,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "src"))
+sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 import unittest.mock
 import unittest
@@ -9,13 +10,14 @@ import argparse
 import logging
 import time
 import tamperproofbroadcast
+import test_mixin
 import multichain
 import etcd
 
 logging.disable(logging.CRITICAL)
 
 
-class TestHTLLTB(unittest.TestCase):
+class TestHTLLTB(test_mixin.TestMixin, unittest.TestCase):
     def setUp(self):
         n_processes = 3
         self.broadcasts = []
@@ -59,32 +61,13 @@ class TestHTLLTB(unittest.TestCase):
         self.b._uncreate()
 
     def test_total_order(self):
-        test_time = 60
+        self.total_order(test_time=10)
 
-        # broadcast and deliver for test_time seconds
-        t0 = time.time()
-        i = 0
-        while time.time() < t0 + test_time:
-            for bc, hi in zip(self.broadcasts, self.histories):
-                bc.broadcast(i)
-                try:
-                    for _ in range(2 ** 10):
-                        hi.append(bc.deliver())
-                except:
-                    pass
-            i = i + 1
+    def test_fifo_order(self):
+        self.fifo_order(test_time=10)
 
-        # check all histories longer than 0
-        for hi in self.histories:
-            self.assertTrue(len(hi) > 0)
-        # check history from other pids longer than 0
-        for hi in self.histories:
-            for bc in self.broadcasts:
-                pid = bc.pid
-                pid_history = [msg for msg in hi if msg[0] == pid]
-                self.assertTrue(len(pid_history) > 0)
-        # check shortest history is equal to prefix of other histories
-        for els in zip(*self.histories):
-            e = els[0]
-            for el in els:
-                self.assertEqual(e, el)
+    def test_no_creation(self):
+        self.no_creation(test_time=10)
+
+    def test_no_duplication(self):
+        self.no_duplication(test_time=10)

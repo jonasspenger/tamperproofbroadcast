@@ -4,6 +4,7 @@ import threading
 import hashlib
 import logging
 import queue
+import uuid
 import time
 import sys
 import os
@@ -227,7 +228,7 @@ class HTLLTB(module.Module):
         self.mth = hashlib.sha256()
         self.n = 0
         self.stop_event = threading.Event()
-        self.pid = str(round(time.time()))
+        self.pid = str(uuid.uuid4())
         self.txid = 0
         self._handle_exit(sys.exit)
         super().__init__()
@@ -281,7 +282,7 @@ class HTLLTB(module.Module):
 class HTLLTBTEST(module.Module):
     def __init__(self):
         self.stop_event = threading.Event()
-        self.pid = str(round(time.time()))
+        self.pid = str(uuid.uuid4())
         self.txid = 0
         self._handle_exit(sys.exit)
         super().__init__()

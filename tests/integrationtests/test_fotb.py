@@ -54,9 +54,6 @@ class TestFOTB(test_mixin.TestMixin, unittest.TestCase):
         self.b._stop()
         self.b._uncreate()
 
-    def test_total_order(self):
-        self.total_order(test_time=60)
-
     def test_fifo_order(self):
         self.fifo_order(test_time=60)
 

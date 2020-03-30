@@ -18,6 +18,7 @@ class TestMixin(unittest.TestCase):
                 except:
                     pass
             i = i + 1
+            time.sleep(0.1)
 
         # check all histories longer than 0
         for hi in self.histories:
@@ -44,6 +45,7 @@ class TestMixin(unittest.TestCase):
         i = 0
         while time.time() < t0 + test_time:
             for bc, hi in zip(self.broadcasts, self.histories):
+                time.sleep(0.1)
                 bc.broadcast(i)
                 try:
                     for _ in range(2 ** 10):
@@ -51,6 +53,7 @@ class TestMixin(unittest.TestCase):
                 except:
                     pass
             i = i + 1
+            time.sleep(0.1)
 
         # check all histories longer than 0
         for hi in self.histories:
@@ -88,6 +91,7 @@ class TestMixin(unittest.TestCase):
                 except:
                     pass
             i = i + 1
+            time.sleep(0.1)
 
         # check all histories longer than 0
         for hi in self.histories:
@@ -121,6 +125,7 @@ class TestMixin(unittest.TestCase):
                 except:
                     pass
             i = i + 1
+            time.sleep(0.1)
 
         # check all histories longer than 0
         for hi in self.histories:
